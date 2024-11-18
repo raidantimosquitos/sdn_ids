@@ -15,5 +15,5 @@ def call_api(url):
 
 if __name__ == "__main__":
     url1 = "http://127.0.0.1:8000/items/42"
-    url2 = "http://127.0.0.1:8000/"
+    url2 = "http://127.0.0.1:8000/analyze"
     call_api(url2)
