@@ -7,26 +7,23 @@ import time
 # Create the FastAPI application
 app = FastAPI()
 
-# Define a simple route
+# Define a simple route  (GET just to test the API)
 @app.get("/")
 def read_root():
     return {"message": "Welcome to my API!"}
 
-# Define a route with a parameter
+# Define a route with a parameter  (GET just to test the API)
 @app.get("/items/{item_id}")
 def read_item(item_id: int, q: str = None):
     return {"item_id": item_id, "q": q}
 
-# Path where Zeek stores analysis files
-ZEEK_LOG_DIR = "zeek_output"
-
-@app.get("/analyze")
-def analyze_existing_logs(log_type: str = "conn"):
+@app.get("/analyze")  
+def analyze_existing_logs():
     """
     Endpoint to analyze a log file produced by Zeek.
-    :param log_type: Type of Zeek log to read (default: 'conn').
     """
     user = "p4"
+
     # Change directory to Zeek installation and start Zeek
     try:
         subprocess.run(["sudo", "zeekctl", "start"], cwd=f"/usr/local/zeek/zeek_install/bin", check=True)
@@ -55,15 +52,14 @@ def analyze_existing_logs(log_type: str = "conn"):
     
     # Change directory and listen to the Zeek logs
     try:
-        subprocess.Popen(["tcpdump", "-i", "zeek2-eth0", "-s", "0", "-w", "tcptraffic.pcap"], cwd=f"/home/{user}/pcap_file/")
+        subprocess.Popen(["tcpdump", "-i", "zeek2-eth0", "-s", "0", "-w", "tcptraffic.pcap"], cwd=pcap_dir)
     except subprocess.CalledProcessError as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to start Zeek: {e.stderr}"
         )
     
-    # Wait for 15 seconds to send the paquet manually and capture the traffic
-    time.sleep(15)
-
+    # Wait for 20 seconds to send the paquet manually and capture the traffic
+    time.sleep(20)
 
     # Stop the tcpdump process
     try:
@@ -75,7 +71,7 @@ def analyze_existing_logs(log_type: str = "conn"):
 
     # Execute a Zeek analysing command
     try:
-        result = subprocess.run(["zeek","-C", "-r", f"/home/{user}/pcap_file/tcptraffic.pcap"],cmd=f"/home/{user}/log/", capture_output=True, text=True, check=True)
+        result = subprocess.run(["zeek","-C", "-r", f"/home/{user}/pcap_file/tcptraffic.pcap"],cmd=log_dir, capture_output=True, text=True, check=True)
     except subprocess.CalledProcessError as e:
         raise HTTPException(
             status_code=500, detail=f"Zeek command failed: {e.stderr}"
@@ -90,10 +86,6 @@ def analyze_existing_logs(log_type: str = "conn"):
             status_code=404, detail=f"The file log file {log_file} does not exist."
         )
     
-
-
-
-
     # Extract IP and occurrence using zeek-cut and save to extract.csv
     try:
         extract_command = (
