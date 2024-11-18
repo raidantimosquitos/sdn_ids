@@ -7,7 +7,7 @@ import time
 # Create the FastAPI application
 app = FastAPI()
 
-# Define a simple route  (GET just to test the API)
+# Define a simple route  (GET   just to test the API)
 @app.get("/")
 def read_root():
     return {"message": "Welcome to my API!"}
