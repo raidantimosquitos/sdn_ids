@@ -16,13 +16,10 @@ miniedit
 ```
 
 
-1. Start Zeek on the host zeek2 (We have to create a virtual interface because eth0 is already use)
+1. Start Zeek on the host zeek2 (We have to change the interface because eth0 is already use)
 ```bash
-sudo ip link add name zeek0 type dummy
-sudo ip link set zeek0 up
-sudo ip addr add 10.0.0.3/24 dev zeek0
 sudo nano /usr/local/zeek/etc/node.cfg
-#change to interface=zeek0
+#change to interface=lo
 sudo /usr/local/zeek/bin/zeekctl cleanup
 sudo /usr/local/zeek/bin/zeekctl deploy
 sudo /usr/local/zeek/bin/zeekctl start
