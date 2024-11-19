@@ -74,7 +74,7 @@ def analyze_existing_logs():
     extract_file = f"/home/{user}/log/extract.csv"
 
     # Check if the log file exists
-    if not log_file.exists():
+    if not Path(log_file).exists():
         raise HTTPException(
             status_code=404, detail=f"The file log file {log_file} does not exist."
         )
