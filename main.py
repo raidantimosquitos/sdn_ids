@@ -23,15 +23,7 @@ def analyze_existing_logs():
     Endpoint to analyze a log file produced by Zeek.
     """
     user = "p4"
-
-    # Change directory to Zeek installation and start Zeek
-    try:
-        subprocess.run(["sudo", "/usr/local/zeek/bin/zeekctl", "start"], check=True)
-    except subprocess.CalledProcessError as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to start Zeek: {e.stderr}"
-        )
-    
+ 
     # Create directories if they don't exist
     pcap_dir = Path(f"/home/{user}/pcap_file")
     log_dir = Path(f"/home/{user}/log")
