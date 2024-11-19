@@ -45,7 +45,7 @@ def analyze_existing_logs():
     
     # Change directory and listen to the Zeek logs
     try:
-        subprocess.Popen(["tcpdump", "-i", "zeek2-eth0", "-s", "0", "-w", "tcptraffic.pcap"], cwd=pcap_dir)
+        subprocess.Popen(["tcpdump", "-i", "zeek2-eth0", "-s", "0", "-w", f"/home/{user}/pcap_file/tcptraffic.pcap"], cwd=pcap_dir)
     except subprocess.CalledProcessError as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to start Zeek: {e.stderr}"
