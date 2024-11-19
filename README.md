@@ -12,10 +12,11 @@ cd api_zeek
 ```bash
 sudo mn -c #cleanup 
 miniedit
+#then create manually the simple architechture
 ```
 
 
-1. Start Zeek on the host zeek2
+1. Start Zeek on the host zeek2 (We have to create a virtual interface because eth0 is already use)
 ```bash
 sudo ip link add name zeek0 type dummy
 sudo ip link set zeek0 up
