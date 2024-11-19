@@ -14,6 +14,6 @@ def call_api(url):
         print("Failed with status code:", response.status_code)
 
 if __name__ == "__main__":
-    url1 = "http://127.0.0.1:8000/items/42"
-    url2 = "http://127.0.0.1:8000/analyze"
+    url1 = "http://10.0.0.2:8000/items/42"
+    url2 = "http://10.0.0.2:8000/analyze"
     call_api(url2)
