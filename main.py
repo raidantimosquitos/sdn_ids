@@ -18,7 +18,7 @@ def extract_top_ports(user, log_file, extract_file):
         # Step 1: zeek-cut
         with open(log_path, "r") as infile:
             zeek_cut = subprocess.Popen(
-                ["/usr/local/zeek/bin/zeek-cut", "id.resp_p"], stdin=infile, stdout=subprocess.PIPE
+                ["/usr/local/zeek/bin/zeek-cut", "id.resp_h"], stdin=infile, stdout=subprocess.PIPE
             )
 
         # Step 2: sort
