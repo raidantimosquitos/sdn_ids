@@ -1,12 +1,25 @@
 # DOC API Zeek with mininet : 
+## Set up 
+### Import the project with git : 
+```bash 
+cd /home/p4
+git clone https://github.com/clementperrotaimvp/api_zeek.git
+cd api_zeek
+```
+
 1. Start Zeek on the main host
 ```bash
 sudo /usr/local/zeek/bin/zeekctl cleanup
 sudo /usr/local/zeek/bin/zeekctl deploy
 sudo /usr/local/zeek/bin/zeekctl start
 ```
+2. Create Mininet architecture
+```bash
+sudo mn -c #cleanup 
+miniedit
+```
 
-2. Install FASTAPI on Zeek Server
+3. Install FASTAPI on Zeek Server
 On the main host 
 ```bash 
 cd /home/p4 
@@ -28,14 +41,14 @@ cd /home/p4
 pip install *.whl
 ```
 
-3. Launch the server
+4. Launch the server
 ```bash
 cd /home/p4/api_zeek
 /home/p4/.local/bin/uvicorn main:app --reload
 ```
 
 
-4. Stop Zeek Server on main host
+5. After experiment : Stop Zeek Server on main host
 
 ```bash
 sudo /usr/local/zeek/bin/zeekctl stop

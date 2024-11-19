@@ -21,9 +21,10 @@ def read_item(item_id: int, q: str = None):
 def analyze_existing_logs():
     """
     Endpoint to analyze a log file produced by Zeek.
+    
     """
     user = "p4"
- 
+
     # Create directories if they don't exist
     pcap_dir = Path(f"/home/{user}/pcap_file")
     log_dir = Path(f"/home/{user}/log")
