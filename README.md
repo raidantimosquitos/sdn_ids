@@ -56,7 +56,7 @@ cd /home/p4/api_zeek
 ```
 
 
-5. After experiment : Stop Zeek Server on main host
+5. After experiment : Stop Zeek Server on zeek2 host
 
 ```bash
 sudo /usr/local/zeek/bin/zeekctl stop
