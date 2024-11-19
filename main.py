@@ -83,7 +83,7 @@ def analyze_existing_logs():
     
     # Extract IP and occurrence using zeek-cut and save to extract.csv
     try:
-        subprocess.run(f"zeek-cut id.resp_p < {log_file} | sort | uniq -c | sort -rn | head -n 10 > {extract_file}", shell=True, check=True)
+        subprocess.run(f"zeek-cut id.resp_p < {log_file} | sort | uniq -c | sort -rn | head -n 10 > {extract_file}",cwd=f"/home/{user}/log/", shell=True, check=True)
     except subprocess.CalledProcessError as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to extract data: {e.stderr}"
