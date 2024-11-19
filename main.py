@@ -4,6 +4,52 @@ from pathlib import Path
 import subprocess
 import time
 
+
+
+
+def extract_top_ports(user, log_file, extract_file):
+    log_path = Path(f"/home/{user}/log/") / log_file
+    extract_path = Path(f"/home/{user}/log/") / extract_file
+
+    if not log_path.exists():
+        raise FileNotFoundError(f"Log file {log_path} does not exist.")
+
+    try:
+        # Step 1: zeek-cut
+        with open(log_path, "r") as infile:
+            zeek_cut = subprocess.Popen(
+                ["zeek-cut", "id.resp_p"], stdin=infile, stdout=subprocess.PIPE
+            )
+
+        # Step 2: sort
+        sort = subprocess.Popen(
+            ["sort"], stdin=zeek_cut.stdout, stdout=subprocess.PIPE
+        )
+
+        # Step 3: uniq -c
+        uniq = subprocess.Popen(
+            ["uniq", "-c"], stdin=sort.stdout, stdout=subprocess.PIPE
+        )
+
+        # Step 4: sort -rn
+        sort_rn = subprocess.Popen(
+            ["sort", "-rn"], stdin=uniq.stdout, stdout=subprocess.PIPE
+        )
+
+        # Step 5: head -n 10
+        with open(extract_path, "w") as outfile:
+            subprocess.run(
+                ["head", "-n", "10"],
+                stdin=sort_rn.stdout,
+                stdout=outfile,
+                check=True
+            )
+
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Command failed: {e.stderr}")
+
+    return f"Top ports written to {extract_path}"
+
 # Create the FastAPI application
 app = FastAPI()
 
@@ -82,12 +128,7 @@ def analyze_existing_logs():
         )
     
     # Extract IP and occurrence using zeek-cut and save to extract.csv
-    try:
-        subprocess.run(f"zeek-cut id.resp_p < {log_file} | sort | uniq -c | sort -rn | head -n 10 > {extract_file}",cwd=f"/home/{user}/log/", shell=True, check=True)
-    except subprocess.CalledProcessError as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to extract data: {e.stderr}"
-        )
+    extract_top_ports("p4", "conn.log", "extract.csv")
     
     # Read the content of the log file
     try:
