@@ -26,7 +26,7 @@ def analyze_existing_logs():
 
     # Change directory to Zeek installation and start Zeek
     try:
-        subprocess.run(["sudo", "zeekctl", "start"], cwd=f"/usr/local/zeek/zeek_install/bin", check=True)
+        subprocess.run(["sudo", "zeekctl", "start"], cwd=f"/usr/local/zeek/bin", check=True)
     except subprocess.CalledProcessError as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to start Zeek: {e.stderr}"
