@@ -7,16 +7,24 @@ git clone https://github.com/clementperrotaimvp/api_zeek.git
 cd api_zeek
 ```
 
-1. Start Zeek on the main host
-```bash
-sudo /usr/local/zeek/bin/zeekctl cleanup
-sudo /usr/local/zeek/bin/zeekctl deploy
-sudo /usr/local/zeek/bin/zeekctl start
-```
+
 2. Create Mininet architecture
 ```bash
 sudo mn -c #cleanup 
 miniedit
+```
+
+
+1. Start Zeek on the host zeek2
+```bash
+sudo ip link add name zeek0 type dummy
+sudo ip link set zeek0 up
+sudo ip addr add 10.0.0.3/24 dev zeek0
+sudo nano /usr/local/zeek/etc/node.cfg
+#change to interface=zeek0
+sudo /usr/local/zeek/bin/zeekctl cleanup
+sudo /usr/local/zeek/bin/zeekctl deploy
+sudo /usr/local/zeek/bin/zeekctl start
 ```
 
 3. Install FASTAPI on Zeek Server
