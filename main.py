@@ -61,18 +61,26 @@ def analyze_existing_logs():
         raise HTTPException(
             status_code=500, detail=f"Failed to stop tcpdump: {e.stderr}"
         )
-
-    # Execute a Zeek analysing command
-    try:
-        result = subprocess.run(["/usr/local/zeek/bin/zeek","-C", "-r", f"/home/{user}/pcap_file/tcptraffic.pcap"], capture_output=True, text=True, check=True)
-    except subprocess.CalledProcessError as e:
-        raise HTTPException(
-            status_code=500, detail=f"Zeek command failed: {e.stderr}"
-        )
+    
     # Construct the log file path
     log_file = f"/home/{user}/log/conn.log"
     extract_file = f"/home/{user}/log/extract.csv"
 
+
+    # Execute a Zeek analysing command
+    try:
+        result = subprocess.run(["cd",f"/home/{user}/log/"],check=True)
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(
+            status_code=500, detail=f"cd command failed: {e.stderr}"
+        )
+    try:
+        result = subprocess.run(["/usr/local/zeek/bin/zeek","-C", "-r", f"/home/{user}/pcap_file/tcptraffic.pcap"]""", capture_output=True, text=True, check=True""")
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(
+            status_code=500, detail=f"Zeek command failed: {e.stderr}"
+        )
+    
     # Check if the log file exists
     if not Path(log_file).exists():
         raise HTTPException(
