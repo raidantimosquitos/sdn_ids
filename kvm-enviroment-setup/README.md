@@ -165,4 +165,4 @@ Now you should be able to ping `mininet-vm` from `zeek-vm` and vice-versa. If th
 
 ## Conclusion
 
-Up to this point networking settings for the expirement should be ready. You can move on to the directories [zeek-vm-setup](kvm-enviroment-setup/zeek-vm-setup/README.md) and [mininet-vm-setup](kvm-enviroment-setup/mininet-vm-setup/README.md) to follow the guide on software to install and mininet emulation interaction with the private bridge.
+Up to this point networking settings for the expirement should be ready. You can move on to the directories [zeek-vm-setup](../kvm-enviroment-setup/zeek-vm-setup/README.md) and [mininet-vm-setup](../kvm-enviroment-setup/mininet-vm-setup/README.md) to follow the guide on software to install and mininet emulation interaction with the private bridge.
