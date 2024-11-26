@@ -238,6 +238,6 @@ def analyze2_existing_logs():
     
     # Return the lines of the log file
     return JSONResponse(
-        content={"status": "success", "result": result[0],"time":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+        content={"status": "success", "result": result[0][0],"time":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
     )
