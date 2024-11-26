@@ -154,6 +154,8 @@ def analyze2_existing_logs():
     
     """
     user = "p4"
+    timeout = 20  # Temps maximum en secondes
+    stop_word = "potential"  # Mot-clé à détecter
 
     # Create directories if they don't exist
     pcap_dir = Path(f"/home/{user}/pcap_file")
@@ -180,34 +182,47 @@ def analyze2_existing_logs():
     extract_file = f"/home/{user}/log/extract.csv"
 
 
+
     # Execute a Zeek analysing command
     #zeek -i enp7s0 detect_icmp_dos_attack.zeek
 
-    
     try:
-        result = subprocess.run(["/usr/local/zeek/bin/zeek","-i", "lo", f"/home/{user}/zeek_script/detect_icmp_dos_attack.zeek"],cwd=f"/home/{user}/log/", capture_output=True, text=True, check=True)
+        result = subprocess.run(["/usr/local/zeek/bin/zeek","-i", "zeek2-eth0", f"/home/{user}/zeek_script/detect_icmp_dos_attack.zeek"],cwd=f"/home/{user}/log/",  stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True)
+        # Lire la sortie ligne par ligne jusqu'au timeout ou détection du mot-clé
+        for line in iter(proc.stdout.readline, ""):
+            print(line.strip())  # Affiche la sortie en temps réel
+            if stop_word in line:
+                proc.terminate()  # Arrête la commande si le mot est trouvé
+                out_put = "floating attack detected"
+                return {"detail": f"Zeek command stopped after detecting '{stop_word}'."}
+        
+        # Attendre que la commande se termine ou atteindre le timeout
+        proc.wait(timeout=timeout)
+
+        if proc.returncode != 0:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Zeek command failed: {proc.stderr.read()}"
+            )
+        return {"detail": "Zeek command completed successfully."}
+        
+
+    except subprocess.TimeoutExpired:
+        proc.terminate()  # Arrête la commande si le délai est dépassé
+        out_put = "nothing detected"
+        raise HTTPException(
+            status_code=500,
+            detail=f"Zeek command timed out after {timeout} seconds."
+            
+        )
     except subprocess.CalledProcessError as e:
         raise HTTPException(
             status_code=500, detail=f"Zeek command failed: {e.stderr}"
         )
     
-    
-
-    # Extract IP and occurrence using zeek-cut and save to extract.csv
-    # extract_top_ports("p4", "conn.log", "extract.csv")
-    
-    # Read the content of the log file
-    """
-    try:
-        with open(extract_file, "r") as f:
-            extract_content = f.readlines()
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error reading the extract file: {str(e)}"
-        )
-    """
-
     # Return the lines of the log file
     return JSONResponse(
-        content={"status": "success", "logs": "ok"}
+        content={"status": "success", "logs": out_put}
     )
