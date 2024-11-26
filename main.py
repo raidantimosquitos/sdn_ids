@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from pathlib import Path
 import subprocess
 import time
+import threading
 
 
 
@@ -183,6 +184,23 @@ def analyze2_existing_logs():
 
 
 
+    def monitor_output(proc, stop_word, timeout, start_time):
+        # Fonction pour lire la sortie en temps réel dans un thread séparé
+        for line in iter(proc.stdout.readline, ""):
+            print(line.strip())  # Affiche la sortie immédiatement
+            if stop_word in line:
+                proc.terminate()  # Terminer Zeek si le mot-clé est trouvé
+                return {"detail": f"Zeek stopped after detecting '{stop_word}'."}
+            if time.time() - start_time > timeout:
+                proc.terminate()  # Timeout après 20 secondes
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Zeek command timed out after {timeout} seconds."
+                )
+        return None
+
+
+
     # Execute a Zeek analysing command
     #zeek -i enp7s0 detect_icmp_dos_attack.zeek
 
@@ -191,23 +209,19 @@ def analyze2_existing_logs():
             stderr=subprocess.PIPE,
             text=True)
         # Lire la sortie ligne par ligne jusqu'au timeout ou détection du mot-clé
-        for line in iter(proc.stdout.readline, ""):
-            print(line.strip())  # Affiche la sortie en temps réel
-            if stop_word in line:
-                proc.terminate()  # Arrête la commande si le mot est trouvé
-                out_put = "floating attack detected"
-                return {"detail": f"Zeek command stopped after detecting '{stop_word}'."}
-        
-        # Attendre que la commande se termine ou atteindre le timeout
-        proc.wait(timeout=timeout)
+          # Démarrer un thread pour surveiller la sortie de Zeek
 
-        if proc.returncode != 0:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Zeek command failed: {proc.stderr.read()}"
-            )
-        return {"detail": "Zeek command completed successfully."}
+        start_time = time.time()
+        output_thread = threading.Thread(target=monitor_output, args=(proc, stop_word, timeout, start_time))
+        output_thread.start()
+
+        # Attendre que le thread se termine ou un autre événement
+        output_thread.join()
         
+        # Attendre que le processus Zeek se termine (en cas d'erreur ou de timeout)
+        proc.wait()
+
+        return {"detail": "Zeek command completed successfully."}
 
     except subprocess.TimeoutExpired:
         proc.terminate()  # Arrête la commande si le délai est dépassé
