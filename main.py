@@ -183,14 +183,14 @@ def analyze2_existing_logs():
     # Execute a Zeek analysing command
     #zeek -i enp7s0 detect_icmp_dos_attack.zeek
 
-    """
+    
     try:
         result = subprocess.run(["/usr/local/zeek/bin/zeek","-i", "lo", f"/home/{user}/zeek_script/detect_icmp_dos_attack.zeek"],cwd=f"/home/{user}/log/", capture_output=True, text=True, check=True)
     except subprocess.CalledProcessError as e:
         raise HTTPException(
             status_code=500, detail=f"Zeek command failed: {e.stderr}"
         )
-    """
+    
     
 
     # Extract IP and occurrence using zeek-cut and save to extract.csv
