@@ -191,16 +191,16 @@ def analyze2_existing_logs():
             print(line.strip())  # Affiche la sortie immédiatement
             if stop_word in line:
                 proc.terminate()  # Terminer Zeek si le mot-clé est trouvé
-                result.append(['Floating attack detected'])
+                result.append('Floating attack detected')
                 return "Floating attack detected"
                 
             if time.time() - start_time > timeout:
                 proc.terminate()  # Timeout après 20 secondes
+                result.append('OK')
                 raise HTTPException(
                     status_code=500,
                     detail=f"Zeek command timed out after {timeout} seconds."
                 )
-                result.append(['OK'])
                 return "nothing found"
 
 
@@ -238,6 +238,6 @@ def analyze2_existing_logs():
     
     # Return the lines of the log file
     return JSONResponse(
-        content={"status": "success", "result": result[0][0],"time":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+        content={"status": "success", "result": result[0],"time":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
     )
