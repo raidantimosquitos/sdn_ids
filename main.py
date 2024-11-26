@@ -4,6 +4,7 @@ from pathlib import Path
 import subprocess
 import time
 import threading
+from datetime import datetime
 
 
 
@@ -184,19 +185,22 @@ def analyze2_existing_logs():
 
 
 
-    def monitor_output(proc, stop_word, timeout, start_time):
+    def monitor_output(proc, stop_word, timeout, start_tim, result):
         # Fonction pour lire la sortie en temps réel dans un thread séparé
         for line in iter(proc.stdout.readline, ""):
             print(line.strip())  # Affiche la sortie immédiatement
             if stop_word in line:
                 proc.terminate()  # Terminer Zeek si le mot-clé est trouvé
+                result.append(['Floating attack detected'])
                 return "Floating attack detected"
+                
             if time.time() - start_time > timeout:
                 proc.terminate()  # Timeout après 20 secondes
                 raise HTTPException(
                     status_code=500,
                     detail=f"Zeek command timed out after {timeout} seconds."
                 )
+                result.append(['OK'])
                 return "nothing found"
 
 
@@ -204,6 +208,7 @@ def analyze2_existing_logs():
     #zeek -i enp7s0 detect_icmp_dos_attack.zeek
 
     try:
+        result= []
         proc = subprocess.Popen(["stdbuf", "-oL", "/usr/local/zeek/bin/zeek","-i", "zeek2-eth0", f"/home/{user}/zeek_script/detect_icmp_dos_attack.zeek"],cwd=f"/home/{user}/log/",  stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True)
@@ -211,7 +216,7 @@ def analyze2_existing_logs():
           # Démarrer un thread pour surveiller la sortie de Zeek
 
         start_time = time.time()
-        output_thread = threading.Thread(target=monitor_output, args=(proc, stop_word, timeout, start_time))
+        output_thread = threading.Thread(target=monitor_output, args=(proc, stop_word, timeout, start_time,result))
         output_thread.start()
 
         # Attendre que le thread se termine ou un autre événement
@@ -233,5 +238,6 @@ def analyze2_existing_logs():
     
     # Return the lines of the log file
     return JSONResponse(
-        content={"status": "success", "logs": output_thread}
+        content={"status": "success", "result": result[0],"time":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
     )
