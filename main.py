@@ -189,16 +189,12 @@ def analyze2_existing_logs():
             status_code=500, detail=f"Zeek command failed: {e.stderr}"
         )
     
-    # Check if the log file exists
-    if not Path(log_file).exists():
-        raise HTTPException(
-            status_code=404, detail=f"The file log file {log_file} does not exist."
-        )
-    
+
     # Extract IP and occurrence using zeek-cut and save to extract.csv
     # extract_top_ports("p4", "conn.log", "extract.csv")
     
     # Read the content of the log file
+    """
     try:
         with open(extract_file, "r") as f:
             extract_content = f.readlines()
@@ -206,8 +202,9 @@ def analyze2_existing_logs():
         raise HTTPException(
             status_code=500, detail=f"Error reading the extract file: {str(e)}"
         )
+    """
 
     # Return the lines of the log file
     return JSONResponse(
-        content={"status": "success", "logs": extract_content}
+        content={"status": "success", "logs": "ok"}
     )
