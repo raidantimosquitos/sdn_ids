@@ -156,7 +156,7 @@ def analyze2_existing_logs():
     """
     user = "p4"
     timeout = 20  # Temps maximum en secondes
-    stop_word = "potential"  # Mot-clé à détecter
+    stop_word = "Potential"  # Mot-clé à détecter
 
     # Create directories if they don't exist
     pcap_dir = Path(f"/home/{user}/pcap_file")
