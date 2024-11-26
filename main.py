@@ -189,7 +189,8 @@ def analyze2_existing_logs():
     try:
         proc = subprocess.Popen(["/usr/local/zeek/bin/zeek","-i", "zeek2-eth0", f"/home/{user}/zeek_script/detect_icmp_dos_attack.zeek"],cwd=f"/home/{user}/log/",  stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True)
+            text=True,
+    env={"PYTHONUNBUFFERED": "1"})
         # Lire la sortie ligne par ligne jusqu'au timeout ou détection du mot-clé
         for line in iter(proc.stdout.readline, ""):
             print(line.strip())  # Affiche la sortie en temps réel
