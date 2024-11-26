@@ -190,15 +190,14 @@ def analyze2_existing_logs():
             print(line.strip())  # Affiche la sortie immédiatement
             if stop_word in line:
                 proc.terminate()  # Terminer Zeek si le mot-clé est trouvé
-                return {"detail": f"Zeek stopped after detecting '{stop_word}'."}
+                return "Floating attack detected"
             if time.time() - start_time > timeout:
                 proc.terminate()  # Timeout après 20 secondes
                 raise HTTPException(
                     status_code=500,
                     detail=f"Zeek command timed out after {timeout} seconds."
                 )
-        return None
-
+                return "nothing found"
 
 
     # Execute a Zeek analysing command
@@ -221,15 +220,11 @@ def analyze2_existing_logs():
         # Attendre que le processus Zeek se termine (en cas d'erreur ou de timeout)
         proc.wait()
 
-        return {"detail": "Zeek command completed successfully."}
-
     except subprocess.TimeoutExpired:
         proc.terminate()  # Arrête la commande si le délai est dépassé
-        out_put = "nothing detected"
         raise HTTPException(
             status_code=500,
             detail=f"Zeek command timed out after {timeout} seconds."
-            
         )
     except subprocess.CalledProcessError as e:
         raise HTTPException(
@@ -238,5 +233,5 @@ def analyze2_existing_logs():
     
     # Return the lines of the log file
     return JSONResponse(
-        content={"status": "success", "logs": out_put}
+        content={"status": "success", "logs": output_thread}
     )
