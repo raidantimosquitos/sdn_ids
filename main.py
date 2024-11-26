@@ -187,7 +187,7 @@ def analyze2_existing_logs():
     #zeek -i enp7s0 detect_icmp_dos_attack.zeek
 
     try:
-        result = subprocess.run(["/usr/local/zeek/bin/zeek","-i", "zeek2-eth0", f"/home/{user}/zeek_script/detect_icmp_dos_attack.zeek"],cwd=f"/home/{user}/log/",  stdout=subprocess.PIPE,
+        proc = subprocess.Popen(["/usr/local/zeek/bin/zeek","-i", "zeek2-eth0", f"/home/{user}/zeek_script/detect_icmp_dos_attack.zeek"],cwd=f"/home/{user}/log/",  stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True)
         # Lire la sortie ligne par ligne jusqu'au timeout ou détection du mot-clé
