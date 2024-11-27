@@ -22,26 +22,25 @@ mininet>
 
 3. Now you can test the ping reachability within the network, since the controller is running a forwarding L2 learning program, as explained in the [pox-scripts section](../pox-scripts/README.md), the switches will populate their switching tables based on the traffic it arrives. To test the reachability you can run `pingall` and should get an output like the one below:
 ```bash
+res@mininet-vm:~/topology$ sudo python3 topology.py 
+mininet> pingall
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 h7 h8 h9 
+h2 -> h1 h3 h4 h5 h6 h7 h8 h9 
+h3 -> h1 h2 h4 h5 h6 h7 h8 h9 
+h4 -> h1 h2 h3 h5 h6 h7 h8 h9 
+h5 -> h1 h2 h3 h4 h6 h7 h8 h9 
+h6 -> h1 h2 h3 h4 h5 h7 h8 h9 
+h7 -> h1 h2 h3 h4 h5 h6 h8 h9 
+h8 -> h1 h2 h3 h4 h5 h6 h7 h9 
+h9 -> h1 h2 h3 h4 h5 h6 h7 h8 
+*** Results: 0% dropped (72/72 received)
 
 ```
 
-4. So up to now we have a running emulation of the network where all the hosts can reach each other, but we still need this traffic to be mirrored to the `zeek-vm`, here is where the magic of OpenVSwitch comes to play. What we basically are going to do is configure the root switch `s1` in our case, to mirror all the traffic arriving to its ports that connect to the child switches (`s2`, `s3` and `s4`) to the private virtual bridge interface we configured earlier in the [kvm-environment-setup](../kvm-enviroment-setup/README.md) directory. 
+4. Also, `topology.py` now configures the mirroring from the root switch to `zeek-vm`. All the mirrored traffic will be sent through the earlier configured private virtual bridge in the [kvm-environment-setup](../kvm-enviroment-setup/README.md) section. *NOTE: Please take into account that the python script `topology.py` assumes that the private virtual bridge interface name is `enp7s0`, if this is different in your case, please edit the python script.*
 
-5. First, open a new `mininet-vm` terminal instance, then we will have to add the VM interface (`enp7s0` in our case) as a port to the 0VS `s1`. To do this we run the following command:
-```bash
-# You can change the interface name and zeek-vm IP address according to what you have configured
-res@mininet-vm:~$ sudo ovs-vsctl add-port s1 enp7s0 -- set interface enp7s0 type=gre options:remote_ip=192.168.100.2 
-```
-
-6. Second, configure `s1` to mirror the traffic from all its ports to `enp7s0` port.
-```bash
-# You can change the interface name to what you have configured
-res@mininet-vm:~$ sudo ovs-vsctl -- set Bridge s1 mirrors=@m -- --id=@enp7s0 get Port enp7s0 -- --id=@m create Mirror name=zeekMirror select-all=true output-port=@enp7s0
-```
-
-7. Check that the traffic mirror object has been effectively created by running `sudo ovs-vsctl list Mirror`. You should see mirror `m0` binded to `enp7s0` port.
-
-8. Now you are good to go, you can check that the traffic mirroring is working by opening a `zeek-vm` instance and running `sudo tcpdump -i enp7s0`.
+5. If you want to test the correct traffic mirroring you can execute the `tcpdump` command on the interface binded to the private virtual bridge on `zeek-vm` side, as shown in the following snippet. 
 ```bash
 res@zeek-vm:~$ sudo tcpdump -i enp7s0
 ```
@@ -54,7 +53,7 @@ From here the networking configuration of the environment is ready, you can chec
 
 
 ## TODO #1: Research on timestamps
-In order to implement some of the evaluation metrics earlier discussed, we must set timestamps during different events within the emulation. This still remains to be done, I think I need to add to the `topology.py` script, the steps 5 and 6 in this guide, so that the bridging and mirroring is automatically configured and then we can trigger some traffic generation functions for certain amounts of time and record the timestamps. We thus avoid using the Mininet CLI.
+In order to implement some of the evaluation metrics earlier discussed, we must set timestamps during different events within the emulation. This still remains to be done, then we can trigger some traffic generation functions for certain amounts of time and record the timestamps. We thus avoid using the Mininet CLI.
 
 ## TODO #2: Traffic patterns
 

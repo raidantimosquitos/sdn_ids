@@ -142,27 +142,9 @@ You can add the previous XML code block to `/etc/libvirt/qemu/zeek-vm.xml` and `
 </serial>
 ```
 
-You can run `ip link show dev br-private` to confirm that the bridge is in UP status. If it is, start both VM with `virsh start zeek-vm` and `virsh start mininet-vm` and connect to both VMs (via `ssh` or `virsh console`). Login to `res` user and run `ip addr show` to check your VM's interfaces, you should usually only have three interfaces `lo` (loopback interface), `enp1s0` or some other name (interface to QEMU default network) and `enp7s0` or some other name (interface to the private virtual bridge, you can confirm by matching the MAC address to the one you added to the XML configuration file of the VM).
+You can run `ip link show dev br-private` to confirm that the bridge is in UP status. If it is, start both KVMs with `virsh start zeek-vm` and `virsh start mininet-vm` and connect to both VMs (via `ssh` or `virsh console`). Login to `res` user and run `ip addr show` to check your VM's interfaces, you should usually only have three interfaces `lo` (loopback interface), `enp1s0` or some other name (interface to QEMU default network) and `enp7s0` or some other name (interface to the private virtual bridge, you can confirm by matching the MAC address to the one you added to the XML configuration file of the VM).
 
-Next up, add an address to this virtual bridge interface with command `ip addr add 192.168.100.x dev enp7s0`. Each of the VMs should have a unique address, in our case:
-```bash
-zeek-vm: 192.168.100.2
-mininet-vm: 192.168.100.3
-```
-
-Lastly, we need to create an entry in the routing tables of each of the VMs to forward packets through the private virtual bridge interfaces:
-```bash
-# in zeek-vm: 
-ip route add 192.168.100.3 dev enp7s0
-
-# in mininet-vm:
-ip route add 192.168.100.2 dev enp7s0
-```
-
-Again the last two commands (adding address to interface and adding the routing table entry) will have to be run in every VM startup. You can refer to the Static IP Assignment section in the [link](https://ubuntu.com/server/docs/configuring-networks) provided earlier to make changes permanent.
-
-Now you should be able to ping `mininet-vm` from `zeek-vm` and vice-versa. If that is not the case yet, you can also check that IP forwarding is active in each VM by running `sudo sysctl -w net.ipv4.ip_forward=1`. It is also interesting to keep this set in the system of each VM by editing the file `a` and uncomment the `net.ipv4.ip_forward=1` line.
 
 ## Conclusion
 
-Up to this point networking settings for the expirement should be ready. You can move on to the directories [zeek-vm-setup](../kvm-enviroment-setup/zeek-vm-setup/README.md) and [mininet-vm-setup](../kvm-enviroment-setup/mininet-vm-setup/README.md) to follow the guide on software to install and mininet emulation interaction with the private bridge.
+You can now move on to the directories [zeek-vm-setup](../kvm-enviroment-setup/zeek-vm-setup/README.md) and [mininet-vm-setup](../kvm-enviroment-setup/mininet-vm-setup/README.md) to follow the guide on software to install and networking configuration from between the KVMs and the private bridge.
