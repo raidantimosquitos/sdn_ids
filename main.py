@@ -3,6 +3,8 @@ from fastapi.responses import JSONResponse
 from pathlib import Path
 import subprocess
 import time
+import threading
+from datetime import datetime
 
 
 
@@ -142,4 +144,100 @@ def analyze_existing_logs():
     # Return the lines of the log file
     return JSONResponse(
         content={"status": "success", "logs": extract_content}
+    )
+
+
+
+
+@app.get("/analyze2")  
+def analyze2_existing_logs():
+    """
+    Endpoint to analyze a log file produced by Zeek.
+    
+    """
+    user = "p4"
+    timeout = 5  # Temps maximum en secondes
+    stop_word = "Potential"  # Mot-clé à détecter
+
+    # Create directories if they don't exist
+    pcap_dir = Path(f"/home/{user}/pcap_file")
+    log_dir = Path(f"/home/{user}/log")
+    zeek_dir = Path(f"/home/{user}/zeek_script")
+    
+    pcap_dir.mkdir(parents=True, exist_ok=True)
+    log_dir.mkdir(parents=True, exist_ok=True)
+    zeek_dir.mkdir(parents=True, exist_ok=True)
+
+    #cleaning old files
+    tcpdump_file = Path(f"/home/{user}/pcap_file/tcptraffic.pcap")
+    if tcpdump_file.exists():
+        tcpdump_file.unlink()
+    log_file = Path(f"/home/{user}/log/conn.log")
+    if log_file.exists():
+        log_file.unlink()
+    extract_file = Path(f"/home/{user}/pcap_file/extract.csv")
+    if extract_file.exists():
+        extract_file.unlink()
+    
+    
+    log_file = f"/home/{user}/log/conn.log"
+    extract_file = f"/home/{user}/log/extract.csv"
+
+
+
+    def monitor_output(proc, stop_word, timeout, start_tim, result):
+        # Fonction pour lire la sortie en temps réel dans un thread séparé
+        for line in iter(proc.stdout.readline, ""):
+            print(line.strip())  # Affiche la sortie immédiatement
+            if stop_word in line:
+                proc.terminate()  # Terminer Zeek si le mot-clé est trouvé
+                result.append('Floating attack detected')
+                return "Floating attack detected"
+                
+            if time.time() - start_time > timeout:
+                proc.terminate()  # Timeout après 20 secondes
+                result.append('OK')
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Zeek command timed out after {timeout} seconds."
+                )
+                return "nothing found"
+
+
+    # Execute a Zeek analysing command
+    #zeek -i enp7s0 detect_icmp_dos_attack.zeek
+
+    try:
+        result= []
+        proc = subprocess.Popen(["stdbuf", "-oL", "/usr/local/zeek/bin/zeek","-i", "zeek2-eth0", f"/home/{user}/zeek_script/detect_icmp_dos_attack.zeek"],cwd=f"/home/{user}/log/",  stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True)
+        # Lire la sortie ligne par ligne jusqu'au timeout ou détection du mot-clé
+          # Démarrer un thread pour surveiller la sortie de Zeek
+
+        start_time = time.time()
+        output_thread = threading.Thread(target=monitor_output, args=(proc, stop_word, timeout, start_time,result))
+        output_thread.start()
+
+        # Attendre que le thread se termine ou un autre événement
+        output_thread.join()
+        
+        # Attendre que le processus Zeek se termine (en cas d'erreur ou de timeout)
+        proc.wait()
+
+    except subprocess.TimeoutExpired:
+        proc.terminate()  # Arrête la commande si le délai est dépassé
+        raise HTTPException(
+            status_code=500,
+            detail=f"Zeek command timed out after {timeout} seconds."
+        )
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(
+            status_code=500, detail=f"Zeek command failed: {e.stderr}"
+        )
+    
+    # Return the lines of the log file
+    return JSONResponse(
+        content={"status": "success", "result": result[0],"time":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
     )
