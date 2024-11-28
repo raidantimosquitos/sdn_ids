@@ -157,7 +157,7 @@ def analyze2_existing_logs():
     
     """
     user = "p4"
-    timeout = 2  
+    timeout = 3 
     stop_word = "Potential" 
 
     # Create directories if they don't exist
