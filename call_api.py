@@ -19,7 +19,7 @@ def call_api(url):
 
 if __name__ == "__main__":
     t1 = datetime.now()
-    process = subprocess.Popen(["ping", "-f", "10.0.0.2"], check=True)
+    process = subprocess.Popen(["ping", "-f", "10.0.0.2"])
     url1 = "http://10.0.0.2:8000/analyze2"
     json_message = call_api(url1)
     process.terminate()  
