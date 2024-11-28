@@ -190,12 +190,12 @@ def analyze2_existing_logs():
         for line in iter(proc.stdout.readline, ""):
             print(line.strip())  
             if stop_word in line:
+                proc.terminate()  
                 match = re.search(r"from (\d+\.\d+\.\d+\.\d+)", line)
                 if match:
                     ip_address = match.group(1)  # Adresse IP trouvée
                 result.append('Floating attack detected')
                 result.append(ip_address)
-                proc.terminate()  
                 return "Floating attack detected"
                 
             if time.time() - start_time > timeout:
