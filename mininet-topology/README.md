@@ -51,9 +51,25 @@ res@zeek-vm:~$ sudo tcpdump -i enp7s0
 
 From here the networking configuration of the environment is ready, you can check section [zeek-scripts](../zeek-scripts/README.md) that will show you how Zeek IDS detects potentially threat events and it alerts the Pox controller, which in turn will have to install rules to drop the harmful traffic.
 
+## UPDATE: RTT logging
 
-## TODO #1: Research on timestamps
-In order to implement some of the evaluation metrics earlier discussed, we must set timestamps during different events within the emulation. This still remains to be done, then we can trigger some traffic generation functions for certain amounts of time and record the timestamps. We thus avoid using the Mininet CLI.
+Mininet script `attack-sim.py` in the repository generates the same simulation presented earlier. However this time also starts an attack simulation and generates some output RTT log files. The roles in this attack are: `h1` as legitimate host, `h3` as attacker and `h9` as target of the attack. The simulation consists of the following stages:
+
+1. Pre-stage pingall: Runs a pingall command to populate the switch tables, so that L2 forwarding learning of the switches does not affect the RTT measurements.
+2. First stage: Generate during 15 seconds regular pings in a frequency of 1 per second from `h1` to `h9`. Write the RTT measurements for each ping in RTT_log.txt file.
+3. Second stage: Generate ping flooding from `h3` to `h9` during 15 seconds (I raised the Zeek ping flooding detection script interval to 15 seconds and threshold of packets to 1500, to get more traffic samples during the attack). At the same time ping flodding starts, I start again regular pinging as in the previous stage from `h1` to `h9` and log RTTs in the file.
+4. Third stage: Ping again during a 15 second interval from `h1` to `h9` and record RTTs in the log file.
+
+In between stages I included some sleep intervals, because when at first I did not ping command showed strange behaviours, I could not distinguish stages properly.
+
+You can find in this directory an example file of the RTT logs. So far I think 15 samples per stage are not statistically significant enough, but is a good first approximation. In this regard, I made some statistical analysis of the RTT measurements, that can be found also in the uploaded `.xlsx` sheet. All in all you can find below an example distribution of RTT values during the three phases of the attack (solid blue and dotted yellow for before the attack and after mitigation respectively; and solid red for the RTT values during the attack). 
+
+<img src="img/chart.png" width="1000" align="center">
+
+The distribution clearly highlights how the ping flooding attack has clear effects on the legitimate traffic, with an increase of more than 500% of the average RTT before the attack. It also shows the effectiveness of the Zeek detection and Pox controller mitigation rules, which after intervention are able to restore RTT levels compared to earlier
+
+## TODO #1: Generate more samples for study
+If I have more time, I will generate a simulation for longer time and increase ping sampling frequency, so we can have more significant data, but for now I think this is presentable.
 
 ## TODO #2: Traffic patterns
 
